@@ -1,0 +1,12 @@
+name: Snake
+dependencies:
+  - python=3.8
+  - matplotlib
+  - seaborn
+  - pandas
+  - numpy
+  - pip
+  - pip:
+    - torch==1.4.0
+    - pygame==1.9.3
+    - GPyOpt==1.2.6

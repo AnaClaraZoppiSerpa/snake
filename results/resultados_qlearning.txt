@@ -1,0 +1,98 @@
+Resultados Q-Learning:
+
+N0 = 1, gamma = 1, episodes = 200
+
+Run time: 86.7462990283966 seconds
+Max. Score: 57
+
+N0 = 1, gamma = 0.99, episodes = 1000
+
+Run time: 166.78277158737183 seconds
+Max. Score: 45
+
+N0 = 1, gamma = 0.98, episodes = 1000
+
+Run time: 600.0035691261292 seconds
+Max. Score: 64
+
+N0 = 1, gamma = 0.95, episodes = 1000
+
+Run time: 600.0037281513214 seconds
+Max. Score: 34
+
+N0 = 0.75, gamma = 0.98, episodes = 1000
+
+Run time: 44.54111289978027 seconds
+Max. Score: 66
+
+N0 = 0.5, gamma = 0.98, episodes = 1000
+
+Run time: 58.652116775512695 seconds
+Max. Score: 58
+
+N0 = 0.25, gamma = 0.98, episodes = 1000
+
+Run time: 600.0043959617615 seconds
+Max. Score: 56
+
+N0 = 2, gamma = 0.98, episodes = 1000
+
+Run time: 25.89958643913269 seconds
+Max. Score: 60
+
+N0 = 4, gamma = 0.98, episodes = 1000
+
+Run time: 21.196118593215942 seconds
+Max. Score: 54
+
+N0 = 10, gamma = 0.98, episodes = 1000
+
+Run time: 14.676084280014038 seconds
+Max. Score: 39
+
+N0 = 0.5, gamma = 0.98, episodes = 1000, reward1
+
+Run time: 42.418917179107666 seconds
+Max. Score: 64
+
+N0 = 0.5, gamma = 0.98, episodes = 1000, reward_exp
+
+Run time: 600.4343683719635 seconds
+Max. Score: 37
+
+N0 = 0.5, gamma = 0.98, episodes = 1000, reward_linear
+
+Run time: 74.51400852203369 seconds
+Max. Score: 72
+Mean Last Scores: 35.1
+
+N0 = 0.5, gamma = 0.98, episodes = 1000, reward_linear penalty rate 0.02
+
+Run time: 54.022438764572144 seconds
+Max. Score: 68
+Mean Last Scores: 32.1
+
+N0 = 0.5, gamma = 0.98, episodes = 1000, reward_linear penalty rate 0.05
+
+Run time: 94.37932229042053 seconds
+Max. Score: 72
+Mean Last Scores: 41.04
+
+N0 = 0.5, gamma = 0.98, episodes = 1000, reward_linear penalty rate 0.1
+
+Run time: 69.07219433784485 seconds
+Max. Score: 63
+Mean Last Scores: 34.22
+
+N0 = 0.5, gamma = 0.98, episodes = 1000, reward_linear penalty rate 0.2
+
+Run time: 55.069982051849365 seconds
+Max. Score: 61
+Mean Last Scores: 30.28
+
+N0 = 0.5, gamma = 0.98, episodes = 1000, reward_linear penalty rate 0.5
+
+Run time: 44.748507499694824 seconds
+Max. Score: 66
+Mean Last Scores: 36.72
+
