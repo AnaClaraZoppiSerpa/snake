@@ -1,10 +1,12 @@
 from abc import abstractmethod
 from random import randint
+from collections import deque
 
 import numpy as np
 
+
 class AgentLFA:
-    def __init__(self, N0, gamma, num_state, num_actions, action_space, alpha = 1):
+    def __init__(self, N0, gamma, num_state, num_actions, action_space, alpha=0.01):
         """
         Contructor
         Args:
@@ -18,7 +20,7 @@ class AgentLFA:
         self.num_state = num_state
         self.num_actions = num_actions
 
-        #self.Q = np.zeros((self.num_state, self.num_actions))
+        # self.Q = np.zeros((self.num_state, self.num_actions))
         self.action_space = action_space
 
         # N(S_t): number of times that state s has been visited
@@ -33,8 +35,10 @@ class AgentLFA:
 
         self.W = {}
         for a in range(num_actions):
-            self.W[a] = np.random.rand(11)
+            self.W[a] = np.ones(20)
         self.alpha = alpha
+
+        self.action_history = deque([0] * 5, 5)
 
     def decode_state(self, state):
         """
@@ -50,16 +54,39 @@ class AgentLFA:
 
         return int(decoded, 2)
 
+    def decode_action(self, encoded_action):
+        if isinstance(encoded_action, np.ndarray):
+            return encoded_action.argmax()
+        return encoded_action
+
     """
     Feature Vector
     """
+
     def feature_vector(self, state):
-        #Our state vector is already 11 dimensions only, and we will use our feature vector as our state.
-        return np.array(state)
+        # Our state vector is already 11 dimensions, and we are adding 9 more
+        feature_list = []
+        feature_list.extend(state)
+
+        danger_moving_left = state[2] * state[3]
+        danger_moving_right = state[1] * state[4]
+        danger_moving_ahead = state[0] * (state[5] + state[6])
+        any_danger = state[0] * state[1] * state[2]
+        feature_list.extend([danger_moving_left, danger_moving_right, danger_moving_ahead, any_danger])
+
+        moving_food_left = state[3] * state[7]
+        moving_food_right = state[4] * state[8]
+        moving_food_up = state[5] * state[9]
+        moving_food_down = state[6] * state[10]
+        moving_to_food = moving_food_left or moving_food_right or moving_food_up or moving_food_down
+        feature_list.extend([moving_food_left, moving_food_right, moving_food_up, moving_food_down, moving_to_food])
+
+        return np.array(feature_list)
 
     """
     State Value Function
     """
+
     def state_value_function(self, state, a):
         return self.W[a].dot(self.feature_vector(state))
 
@@ -68,14 +95,15 @@ class AgentLFA:
     other classes to avoid the duplicate 'choose_action'
     method
     """
+
     def choose_action(self, state):
         decoded_state = self.decode_state(state)
         # epsilon_t = N0/(N0 + N(S_t))
         epsilon = self.epsilon_0 / (self.epsilon_0 + self.state_counter[decoded_state])
         if np.random.uniform(0, 1) < epsilon:
-            action_index = randint(0, self.num_actions-1)
+            action_index = randint(0, self.num_actions - 1)
         else:
-            #action_index = np.argmax(self.Q[state, :])
+            # action_index = np.argmax(self.Q[state, :])
             actions_values = []
             for a in range(self.num_actions):
                 actions_values.append(self.state_value_function(state, a))
@@ -85,10 +113,19 @@ class AgentLFA:
         self.state_counter[decoded_state] += 1
         self.state_action_counter[decoded_state, action_index] += 1
 
+        if self.decode_action(action) != 0 and len(set(self.action_history)) < 3 and np.sum(np.array(self.action_history)) != 0:
+            action = self.action_space[0]
+        # if len(self.action_history) >= 3:
+        #     if np.all(np.array(self.action_history)) and not np.array_equal(action, self.action_space[0]):
+        #         action = self.action_space[0]
+        #     self.action_history.clear()
+
+        self.action_history.append(self.decode_action(action))
         return action
 
     def update(self, target, state, action):
-        self.W[action] = self.W[action] + self.alpha*(target - self.state_value_function(state, action))*self.feature_vector(state)
+        self.W[action] = self.W[action] + self.alpha * (
+                    target - self.state_value_function(state, action)) * self.feature_vector(state)
 
 
 class QLearningAgentLFA(AgentLFA):
@@ -111,6 +148,7 @@ class QLearningAgentLFA(AgentLFA):
     #     target = reward + self.gamma * np.max(self.Q[next_state, :])
     #     self.Q[prev_state, prev_action] += alpha * (target - predict)
 
+
 class SARSAAgentLFA(AgentLFA):
     def update(self, prev_state, next_state, reward, prev_action, next_action):
         """
@@ -130,9 +168,10 @@ class SARSAAgentLFA(AgentLFA):
         target = reward + self.gamma * self.Q[next_state, next_action]
         self.Q[prev_state, prev_action] += alpha * (target - predict)
 
+
 class SARSALambdaAgentLFA(AgentLFA):
     def update(self, prev_state, next_state, reward, prev_action, next_action):
-        delta = reward + self.gamma*self.Q[next_state, next_action] - self.Q[prev_state, prev_action]
+        delta = reward + self.gamma * self.Q[next_state, next_action] - self.Q[prev_state, prev_action]
         self.E[prev_state, prev_action] += 1
 
         alpha = 1 / self.state_action_counter[prev_state, prev_action]
@@ -141,6 +180,7 @@ class SARSALambdaAgentLFA(AgentLFA):
             for a in range(self.num_actions):
                 self.Q[prev_state, prev_action] += alpha * delta * self.E[s, a];
                 self.E[prev_state, prev_action] = self.gamma * self.lambda_value * self.E[s, a];
+
 
 class MonteCarloAgentLFA(QLearningAgentLFA):
     pass
