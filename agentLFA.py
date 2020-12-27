@@ -116,10 +116,6 @@ class AgentLFA:
         if self.decode_action(action) != 0 and len(set(self.action_history)) < 3 and np.sum(np.array(self.action_history)) != 0:
             action_index = randint(0, self.num_actions - 1)
             action = self.action_space[action_index]
-        # if len(self.action_history) >= 3:
-        #     if np.all(np.array(self.action_history)) and not np.array_equal(action, self.action_space[0]):
-        #         action = self.action_space[0]
-        #     self.action_history.clear()
 
         self.action_history.append(self.decode_action(action))
         return action

@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from random import randint
+from collections import deque
 
 import numpy as np
 
@@ -32,6 +33,13 @@ class Agent:
         self.E = np.zeros((self.num_state, self.num_actions))
         self.lambda_value = 0
 
+        self.action_history = deque([0] * 10, 10)
+
+    def decode_action(self, encoded_action):
+        if isinstance(encoded_action, np.ndarray):
+            return encoded_action.argmax()
+        return encoded_action
+
     """
     The Base class that is implemented by
     other classes to avoid the duplicate 'choose_action'
@@ -49,6 +57,11 @@ class Agent:
         self.state_counter[state] += 1
         self.state_action_counter[state, action_index] += 1
 
+        if self.decode_action(action) != 0 and len(set(self.action_history)) < 3 and np.sum(np.array(self.action_history)) != 0:
+            action_index = randint(0, self.num_actions - 1)
+            action = self.action_space[action_index]
+
+        self.action_history.append(self.decode_action(action))
         return action
 
     @abstractmethod
