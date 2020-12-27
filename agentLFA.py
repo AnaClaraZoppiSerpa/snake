@@ -150,36 +150,40 @@ class QLearningAgentLFA(AgentLFA):
 
 
 class SARSAAgentLFA(AgentLFA):
-    def update(self, prev_state, next_state, reward, prev_action, next_action):
-        """
-        Update the action value function using the SARSA update.
-        Q(S, A) = Q(S, A) + alpha(reward + (gamma * Q(S_, A_) - Q(S, A))
-        Args:
-            prev_state: The previous state
-            next_state: The next state
-            reward: The reward for taking the respective action
-            prev_action: The previous action
-            next_action: The next action
-        Returns:
-            None
-        """
-        alpha = 1 / self.state_action_counter[prev_state, prev_action]
-        predict = self.Q[prev_state, prev_action]
-        target = reward + self.gamma * self.Q[next_state, next_action]
-        self.Q[prev_state, prev_action] += alpha * (target - predict)
+    pass
+    # def update(self, prev_state, next_state, reward, prev_action, next_action):
+    #     """
+    #     Update the action value function using the SARSA update.
+    #     Q(S, A) = Q(S, A) + alpha(reward + (gamma * Q(S_, A_) - Q(S, A))
+    #     Args:
+    #         prev_state: The previous state
+    #         next_state: The next state
+    #         reward: The reward for taking the respective action
+    #         prev_action: The previous action
+    #         next_action: The next action
+    #     Returns:
+    #         None
+    #     """
+    #     alpha = 1 / self.state_action_counter[prev_state, prev_action]
+    #     predict = self.Q[prev_state, prev_action]
+    #     target = reward + self.gamma * self.Q[next_state, next_action]
+    #     self.Q[prev_state, prev_action] += alpha * (target - predict)
 
 
 class SARSALambdaAgentLFA(AgentLFA):
-    def update(self, prev_state, next_state, reward, prev_action, next_action):
-        delta = reward + self.gamma * self.Q[next_state, next_action] - self.Q[prev_state, prev_action]
+    def updateSarsaLambda(self, prev_state, next_state, reward, prev_action, next_action):
+        # delta = reward + self.gamma * self.Q[next_state, next_action] - self.Q[prev_state, prev_action]
+        target = reward + self.gamma * self.state_value_function(next_state, next_action)
+
         self.E[prev_state, prev_action] += 1
 
         alpha = 1 / self.state_action_counter[prev_state, prev_action]
 
         for s in range(self.num_state):
             for a in range(self.num_actions):
-                self.Q[prev_state, prev_action] += alpha * delta * self.E[s, a];
-                self.E[prev_state, prev_action] = self.gamma * self.lambda_value * self.E[s, a];
+                #self.Q[prev_state, prev_action] += alpha * delta * self.E[s, a]
+
+                self.E[s, a] = self.gamma * self.lambda_value * self.E[s, a]
 
 
 class MonteCarloAgentLFA(QLearningAgentLFA):
