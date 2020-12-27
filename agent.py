@@ -57,11 +57,6 @@ class Agent:
         self.state_counter[state] += 1
         self.state_action_counter[state, action_index] += 1
 
-        if self.decode_action(action) != 0 and len(set(self.action_history)) < 3 and np.sum(np.array(self.action_history)) != 0:
-            action_index = randint(0, self.num_actions - 1)
-            action = self.action_space[action_index]
-
-        self.action_history.append(self.decode_action(action))
         return action
 
     @abstractmethod
@@ -128,4 +123,22 @@ class SARSALambdaAgent(Agent):
                 self.E[s, a] = self.gamma * self.lambda_value * self.E[s, a]
 
 class MonteCarloAgent(QLearningAgent):
-    pass
+    def choose_action(self, state):
+        # epsilon_t = N0/(N0 + N(S_t))
+        epsilon = self.epsilon_0 / (self.epsilon_0 + self.state_counter[state])
+        if np.random.uniform(0, 1) < epsilon:
+            action_index = randint(0, self.num_actions - 1)
+        else:
+            action_index = np.argmax(self.Q[state, :])
+
+        action = self.action_space[action_index]
+        self.state_counter[state] += 1
+        self.state_action_counter[state, action_index] += 1
+
+        if self.decode_action(action) != 0 and len(set(self.action_history)) < 3 and np.sum(
+                np.array(self.action_history)) != 0:
+            action_index = randint(0, self.num_actions - 1)
+            action = self.action_space[action_index]
+
+        self.action_history.append(self.decode_action(action))
+        return action
