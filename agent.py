@@ -95,16 +95,24 @@ class SARSAAgent(Agent):
         self.Q[prev_state, prev_action] += alpha * (target - predict)
 
 class SARSALambdaAgent(Agent):
+    def reset_E(self):
+        self.E = np.zeros((self.num_state, self.num_actions))
+
     def update(self, prev_state, next_state, reward, prev_action, next_action):
         delta = reward + self.gamma*self.Q[next_state, next_action] - self.Q[prev_state, prev_action]
+        # self.E[prev_state, prev_action] = self.gamma * self.lambda_value * self.E[prev_state, prev_action] + 1
+        # alpha = 1 / self.state_action_counter[prev_state, prev_action]
+        # self.Q[prev_state, prev_action] = self.Q[prev_state, prev_action] + alpha*delta*self.E[prev_state, prev_action]
+
         self.E[prev_state, prev_action] += 1
 
-        alpha = 1 / self.state_action_counter[prev_state, prev_action]
+        #alpha = 1 / self.state_action_counter[prev_state, prev_action]
+        alpha = 0.01
 
         for s in range(self.num_state):
             for a in range(self.num_actions):
-                self.Q[prev_state, prev_action] += alpha * delta * self.E[s, a];
-                self.E[prev_state, prev_action] = self.gamma * self.lambda_value * self.E[s, a];
+                self.Q[prev_state, prev_action] += alpha * delta * self.E[s, a]
+                self.E[s, a] = self.gamma * self.lambda_value * self.E[s, a]
 
 class MonteCarloAgent(QLearningAgent):
     pass
