@@ -171,19 +171,15 @@ class SARSAAgentLFA(AgentLFA):
 
 
 class SARSALambdaAgentLFA(AgentLFA):
-    def updateSarsaLambda(self, prev_state, next_state, reward, prev_action, next_action):
-        # delta = reward + self.gamma * self.Q[next_state, next_action] - self.Q[prev_state, prev_action]
-        target = reward + self.gamma * self.state_value_function(next_state, next_action)
+    def reset_E(self):
+        self.E = np.zeros((self.num_state, self.num_actions))
 
-        self.E[prev_state, prev_action] += 1
-
-        alpha = 1 / self.state_action_counter[prev_state, prev_action]
-
-        for s in range(self.num_state):
-            for a in range(self.num_actions):
-                #self.Q[prev_state, prev_action] += alpha * delta * self.E[s, a]
-
-                self.E[s, a] = self.gamma * self.lambda_value * self.E[s, a]
+    def update(self, target, state, action):
+        #backward view linear TD(lambda)
+        delta = target - self.state_value_function(state, action)
+        Et = self.gamma * self.lambda_value * self.E[self.decode_state(state), action] + self.feature_vector(state)
+        deltaW = self.alpha * delta * Et
+        self.W[action] = self.W[action] + deltaW
 
 
 class MonteCarloAgentLFA(QLearningAgentLFA):
