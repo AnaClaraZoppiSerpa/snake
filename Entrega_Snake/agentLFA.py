@@ -1,9 +1,7 @@
-from abc import abstractmethod
 from random import randint
 from collections import deque
 
 import numpy as np
-
 
 class AgentLFA:
     def __init__(self, N0, gamma, num_state, num_actions, action_space, alpha=0.01):
@@ -20,7 +18,6 @@ class AgentLFA:
         self.num_state = num_state
         self.num_actions = num_actions
 
-        # self.Q = np.zeros((self.num_state, self.num_actions))
         self.action_space = action_space
 
         # N(S_t): number of times that state s has been visited
@@ -62,7 +59,6 @@ class AgentLFA:
     """
     Feature Vector
     """
-
     def feature_vector(self, state):
         # Our state vector is already 11 dimensions, and we are adding 9 more
         feature_list = []
@@ -103,7 +99,6 @@ class AgentLFA:
         if np.random.uniform(0, 1) < epsilon:
             action_index = randint(0, self.num_actions - 1)
         else:
-            # action_index = np.argmax(self.Q[state, :])
             actions_values = []
             for a in range(self.num_actions):
                 actions_values.append(self.state_value_function(state, a))
@@ -122,45 +117,9 @@ class AgentLFA:
 
 class QLearningAgentLFA(AgentLFA):
     pass
-    # def update(self, prev_state, next_state, reward, prev_action, next_action):
-    #     """
-    #     Update the action value function using the Q-Learning update.
-    #     Q(S_t, A_t) = Q(S_t, A_t) + alpha(reward + (gamma * Max Q(S_t+1, *) - Q(S_t, A_t))
-    #     Args:
-    #         prev_state: The previous state
-    #         next_state: The next state
-    #         reward: The reward for taking the respective action
-    #         prev_action: The previous action
-    #         next_action: The next action
-    #     Returns:
-    #         None
-    #     """
-    #     alpha = 1 / self.state_action_counter[prev_state, prev_action]
-    #     predict = self.Q[prev_state, prev_action]
-    #     target = reward + self.gamma * np.max(self.Q[next_state, :])
-    #     self.Q[prev_state, prev_action] += alpha * (target - predict)
-
 
 class SARSAAgentLFA(AgentLFA):
     pass
-    # def update(self, prev_state, next_state, reward, prev_action, next_action):
-    #     """
-    #     Update the action value function using the SARSA update.
-    #     Q(S, A) = Q(S, A) + alpha(reward + (gamma * Q(S_, A_) - Q(S, A))
-    #     Args:
-    #         prev_state: The previous state
-    #         next_state: The next state
-    #         reward: The reward for taking the respective action
-    #         prev_action: The previous action
-    #         next_action: The next action
-    #     Returns:
-    #         None
-    #     """
-    #     alpha = 1 / self.state_action_counter[prev_state, prev_action]
-    #     predict = self.Q[prev_state, prev_action]
-    #     target = reward + self.gamma * self.Q[next_state, next_action]
-    #     self.Q[prev_state, prev_action] += alpha * (target - predict)
-
 
 class SARSALambdaAgentLFA(AgentLFA):
     def reset_E(self):
@@ -182,7 +141,6 @@ class MonteCarloAgentLFA(QLearningAgentLFA):
         if np.random.uniform(0, 1) < epsilon:
             action_index = randint(0, self.num_actions - 1)
         else:
-            # action_index = np.argmax(self.Q[state, :])
             actions_values = []
             for a in range(self.num_actions):
                 actions_values.append(self.state_value_function(state, a))
