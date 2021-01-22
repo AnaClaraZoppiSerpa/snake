@@ -4,17 +4,34 @@ import argparse
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from DQN import DQNAgent
+#from DQN import DQNAgent
 from random import randint
 import random
 import statistics
 import torch.optim as optim
 import torch 
-from GPyOpt.methods import BayesianOptimization
-from bayesOpt import *
+#from GPyOpt.methods import BayesianOptimization
+#from bayesOpt import *
 import datetime
 import distutils.util
+import gym
+from stable_baselines3.common.env_checker import check_env
+from environment import Environment
 DEVICE = 'cpu' # 'cuda' if torch.cuda.is_available() else 'cpu'
+
+import time
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pygame
+import seaborn as sns
+import random
+
+# our classes
+from agent import Agent, QLearningAgent
+from environment import Environment
+from screen import Screen
 
 #################################
 #   Define parameters manually  #
@@ -306,6 +323,93 @@ def run(params):
         plot_seaborn(counter_plot, score_plot, params['train'])
     return total_score, mean, stdev
 
+def run_q_learning(agent: Agent, reward_function, episodes, display, speed, verbose=True):
+    # setting random seed
+    random.seed(42)
+    np.random.seed(42)
+
+    if display:
+        pygame.init()
+
+    env = Environment(440, 440, reward_function)
+    screen = Screen(env)
+
+    episode = 0
+    metrics = {'episodes': [],
+               'scores': [],
+               'rewards': []}
+    start = time.time()
+    while episode < episodes:
+        if display:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                    
+            screen.display()
+
+        state1, done = env.reset()
+        state1 = decode_state(state1)
+        action1 = agent.choose_action(state1)
+        episode_reward = 0
+        while not done:
+            # Getting the next state, reward
+            state2, reward, done = env.step(action1)
+            state2 = decode_state(state2)
+            # Choosing the next action
+            action2 = agent.choose_action(state2)
+
+            # Learning the Q-value
+            decoded_action1 = decode_action(action1)
+            decoded_action2 = decode_action(action2)
+            agent.update(state1, state2, reward, decoded_action1, decoded_action2)
+
+            state1 = state2
+            action1 = action2
+            episode_reward += reward
+
+            if display:
+                screen.display()
+                pygame.time.wait(speed)
+            
+            end = time.time()
+            diff = end - start
+            if diff > 600: # 10min
+                break
+
+        episode += 1
+        if verbose:
+            print(f'Game {episode}      Score: {env.game.score}')
+
+        mean_reward = episode_reward/episodes
+        metrics['episodes'].append(episode)
+        metrics['rewards'].append(mean_reward)
+        metrics['scores'].append(env.game.score)
+        
+        end = time.time()
+        diff = end - start
+        if diff > 600: # 10min
+            break
+        
+
+    return metrics
+
+def default_reward(env):
+    """
+    Return the reward.
+    The reward is:
+        -10 when Snake crashes.
+        +10 when Snake eats food
+        0 otherwise
+    """
+    reward = 0
+    if env.game.crash:
+        reward = -10
+    elif env.player.eaten:
+        reward = 10
+
+    return reward
+
 if __name__ == '__main__':
     # Set options to activate or deactivate the game view, and its speed
     pygame.font.init()
@@ -318,10 +422,39 @@ if __name__ == '__main__':
     print("Args", args)
     params['display'] = args.display
     params['speed'] = args.speed
-    if args.bayesianopt:
-        bayesOpt = BayesianOptimizer(params)
-        bayesOpt.optimize_RL()
-    if params['test']:
-        run(params)
-    if params['test']:
-        test(params)
+    #if args.bayesianopt:
+    #    bayesOpt = BayesianOptimizer(params)
+    #    bayesOpt.optimize_RL()
+    #if params['test']:
+    #    run(params)
+    #if params['test']:
+    #    test(params)
+
+    ##test pasrt for stable baseline
+    #env = Environment(440,440)
+    #x=env.reset()
+    #print(type(x), " ", np.shape(x))
+    ## If the environment don't follow the interface, an error will be thrown
+    #print("checking....")
+    #check_env(env, warn=True)
+    #print('ok')
+    
+    # define environment
+    ACTION_SPACE = np.eye(3)
+    NUM_ACTIONS = 3
+    NUM_STATES = 2 ** 11
+    N0 = 1
+    gamma = 0.98
+
+    # define agent
+    qLearningAgent = QLearningAgent(N0, gamma, NUM_STATES, NUM_ACTIONS, ACTION_SPACE)
+
+    start = time.time()
+    metrics = run_q_learning(qLearningAgent, reward_function=default_reward, episodes=1000, speed=0, display=False)
+    end = time.time()
+
+    plot_metrics(metrics, filepath=None)
+
+    print('Run time:', (end-start), 'seconds')
+    print('Max. Score:', max(metrics['scores']))
+    print('Mean Last Scores:', np.mean(metrics['scores'][-50:]))

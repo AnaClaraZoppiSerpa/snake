@@ -1,8 +1,8 @@
-import numpy as np
 from operator import add
-
 from base_classes import Game
-
+import gym
+from gym import error, spaces, utils
+import numpy as np
 
 def default_reward(env):
     """
@@ -20,28 +20,36 @@ def default_reward(env):
 
     return reward
 
-class Environment:
+class Environment(gym.Env):
     def __init__(self, game_width, game_height, reward_function=default_reward):
+        super(Environment, self).__init__()
         self.game_width = game_width
         self.game_height = game_height
         self.game = Game(game_width, game_height)
         self.player = self.game.player
         self.food = self.game.food
         self.get_reward = reward_function
-
+        #we need something like this
+        #self.observation_space = spaces.Box(low= np.zeros((s, prop)), high = np.full((s, prop), float('inf')), shape = (s, prop), dtype = np.float32)
+        #self.action_space = spaces.Box(low = np.zeros((s+1, ), dtype = int), high = np.array([100]*(s+1)), shape = (s + 1, ), dtype = np.uint8)
+        # Example for using image as input:
+        #self.observation_space = spaces.Box(low=0, high=255, shape=(HEIGHT, WIDTH, N_CHANNELS), dtype=np.uint8)#type and shape of the observation (the matrix/screen of tha playing snake)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(11,)) #this is a try, i don't know if the agruments are correct
+        self.action_space = spaces.Discrete(3) #number of action available - left,right, contiue forward
+        #self.action_space = spaces.Box(np.array([0,0,0]), np.array([+1,+1,+1])) #should be better?
     def reset(self):
         self.game = Game(self.game_width, self.game_height)
         self.player = self.game.player
         self.food = self.game.food
-        return self.__get_state(), self.game.crash
+        return self.__get_state() #, self.game.crash #shoul return only an array
 
     def step(self, action):
         self.player.do_move(action, self.player.x, self.player.y, self.game, self.food)
         state = self.__get_state()
         reward = self.get_reward(self)
         done = self.game.crash
-        return state, reward, done
-
+        return state, reward, done, {} #the last one are the info, can be left empty as in the library documentation example (gym-soccer)
+ 
     def __get_state(self):
         """
         Return the state.
@@ -115,4 +123,11 @@ class Environment:
             else:
                 state[i] = 0
 
-        return state
+        return np.asarray(state)#gym wants np.arrays
+
+    #teh following is an optional method to do
+    def render(self, mode='console'):#should remove ! but for now i don't want to use this function
+        if mode != 'console':
+          raise NotImplementedError()
+        # agent is represented as a cross, rest as a dot
+        #info for debug (i think)
