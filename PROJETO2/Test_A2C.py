@@ -7,6 +7,7 @@ import time
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 
 # auxiliary function to evaluate model
 def evaluate(model,env, num_steps=1000):
