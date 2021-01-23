@@ -54,9 +54,15 @@ class SnakeEnv(gym.Env):
         done = self.game.crash
         info = {}
 
-        self.count += 1
+
+        if not self.player.eaten:
+            self.count += 1
+        else:
+            self.count = 0
+
         if self.count == 1000:
             done = True
+            reward = -10
 
         if self.enable_render:
             self.screen.display()
@@ -64,6 +70,7 @@ class SnakeEnv(gym.Env):
 
         self.cumulative_rewards.append(reward)
         self.cumulative_scores.append(self.game.score)
+        self.record = max(self.record, self.game.score)
 
         if done:
             mean_reward = np.array(self.cumulative_rewards).mean()
@@ -74,7 +81,6 @@ class SnakeEnv(gym.Env):
 
             self.results['reward'].append(mean_reward)
             self.results['score'].append(mean_score)
-            self.record = self.screen.record
 
         return state, reward, done, info
 
