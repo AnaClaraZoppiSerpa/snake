@@ -7,9 +7,6 @@ from base_classes import Game
 from screen_gym import Screen
 import numpy as np
 
-#global highest_score
-#highest_score =[]
-
 def default_reward(env):
     """
     Return the reward.
@@ -20,7 +17,7 @@ def default_reward(env):
     """
     reward = 0
     if env.game.crash:
-        reward = -10
+        reward = -50
     elif env.player.eaten:
         reward = 10
 
@@ -29,10 +26,9 @@ def default_reward(env):
 class SnakeEnv(gym.Env):
 
     def __init__(self, game_width, game_height, reward_function=default_reward, enable_render=True):
-        #super(SnakeEnv, self).__init__()
         self.game_width = game_width
         self.game_height = game_height
-        self.game = Game(game_width, game_height) ###########
+        self.game = Game(game_width, game_height)
         self.player = self.game.player
         self.food = self.game.food
         self.get_reward = reward_function
@@ -43,25 +39,10 @@ class SnakeEnv(gym.Env):
         self.action_space = spaces.Discrete(3)
         self.observation_space = spaces.Discrete(num_state)
         self.count = 0
+        self.results = {'reward': [], 'score': []}
 
-        #self.observation_space = spaces.Box(low=0, high=1, shape=(11,)) #an alternative
-        ##self.action_space = spaces.Box(np.array([0,0,0]), np.array([+1,+1,+1])) #should be better? if we return a state as array, i think so
-
-        self.info = {}
-
-        # Simulation related variables.
-        # self.seed()
-        # self.reset()
-
-
-    # def __del__(self):
-    #     if self.enable_render:
-    #         self.screen.quit_game()
-    #         # quit()
-
-    # def seed(self, seed=None):
-    #     self.np_random, seed = seeding.np_random(seed)
-    #     return [seed]
+        self.cumulative_rewards = []
+        self.cumulative_scores = []
 
     def step(self, action):
         action_space = np.eye(3)
@@ -70,28 +51,30 @@ class SnakeEnv(gym.Env):
         state = self.__get_state()
         reward = self.get_reward(self)
         done = self.game.crash
+        info = {}
 
-        #print(self.game.score)
-        #info = {}
-
-        # else:
-        #     print("State", state, "Reward", reward, "Action", action)
-
-        #why this?
         self.count += 1
         if self.count == 1000:
             done = True
 
-        #if done:
-        ####     print("Fim")
-        ###    self.info=self.game.score
-        ##    self.info={self.game.score}
-        #    highest_score.append(self.game.score)
         if self.enable_render:
             self.screen.display()
             pygame.time.wait(1)
-        #return state, reward, done, info
-        return state, reward, done, self.info
+
+        self.cumulative_rewards.append(reward)
+        self.cumulative_scores.append(self.game.score)
+
+        if done:
+            mean_reward = np.array(self.cumulative_rewards).mean()
+            mean_score = np.array(self.cumulative_scores).mean()
+
+            self.cumulative_rewards = []
+            self.cumulative_scores = []
+
+            self.results['reward'].append(mean_reward)
+            self.results['score'].append(mean_score)
+
+        return state, reward, done, info
 
     def reset(self):
         self.game = Game(self.game_width, self.game_height)
@@ -198,4 +181,3 @@ class SnakeEnv(gym.Env):
                 state[i] = 0
 
         return self.decode_state(state)
-        #return np.asarray(state)
