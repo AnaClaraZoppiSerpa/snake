@@ -43,6 +43,7 @@ class SnakeEnv(gym.Env):
 
         self.cumulative_rewards = []
         self.cumulative_scores = []
+        self.record = 0
 
     def step(self, action):
         action_space = np.eye(3)
@@ -73,6 +74,7 @@ class SnakeEnv(gym.Env):
 
             self.results['reward'].append(mean_reward)
             self.results['score'].append(mean_score)
+            self.record = self.screen.record
 
         return state, reward, done, info
 
