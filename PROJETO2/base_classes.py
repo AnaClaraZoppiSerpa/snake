@@ -6,7 +6,6 @@ from random import randint
 import pygame
 import numpy as np
 
-
 def update_screen():
     pygame.display.update()
 
@@ -26,7 +25,8 @@ class Game:
         self.crash = False
         self.player = Player(self)
         self.food = Food()
-        self.score = 0
+        self.score = 0 ########
+        
 
 
 class Player(object):

@@ -7,6 +7,9 @@ from base_classes import Game
 from screen_gym import Screen
 import numpy as np
 
+#global highest_score
+#highest_score =[]
+
 def default_reward(env):
     """
     Return the reward.
@@ -26,10 +29,10 @@ def default_reward(env):
 class SnakeEnv(gym.Env):
 
     def __init__(self, game_width, game_height, reward_function=default_reward, enable_render=True):
-        super(SnakeEnv, self).__init__()
+        #super(SnakeEnv, self).__init__()
         self.game_width = game_width
         self.game_height = game_height
-        self.game = Game(game_width, game_height)
+        self.game = Game(game_width, game_height) ###########
         self.player = self.game.player
         self.food = self.game.food
         self.get_reward = reward_function
@@ -44,6 +47,7 @@ class SnakeEnv(gym.Env):
         #self.observation_space = spaces.Box(low=0, high=1, shape=(11,)) #an alternative
         ##self.action_space = spaces.Box(np.array([0,0,0]), np.array([+1,+1,+1])) #should be better? if we return a state as array, i think so
 
+        self.info = {}
 
         # Simulation related variables.
         # self.seed()
@@ -67,7 +71,8 @@ class SnakeEnv(gym.Env):
         reward = self.get_reward(self)
         done = self.game.crash
 
-        info = {}
+        #print(self.game.score)
+        #info = {}
 
         # else:
         #     print("State", state, "Reward", reward, "Action", action)
@@ -77,12 +82,16 @@ class SnakeEnv(gym.Env):
         if self.count == 1000:
             done = True
 
-        # if done:
-        #     print("Fim")
+        #if done:
+        ####     print("Fim")
+        ###    self.info=self.game.score
+        ##    self.info={self.game.score}
+        #    highest_score.append(self.game.score)
         if self.enable_render:
             self.screen.display()
             pygame.time.wait(1)
-        return state, reward, done, info
+        #return state, reward, done, info
+        return state, reward, done, self.info
 
     def reset(self):
         self.game = Game(self.game_width, self.game_height)

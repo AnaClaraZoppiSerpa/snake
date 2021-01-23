@@ -100,7 +100,7 @@ print("evaluation duration in s: ", end-start)
 #Test3
 print("Evaluating v2...")
 start=time.time()
-mean_reward = evaluate_policy(model, env, n_eval_episodes=1000)
+mean_reward = evaluate(model, env)
 end=time.time()
 print(f"mean_reward:{mean_reward:.2f}")
 print("evaluation v2 duration in s: ", end-start)
@@ -126,4 +126,23 @@ print("evaluation v2 duration in s: ", end-start)
 
 #plot_metrics(metrics, filepath=None)
 
-        
+#Test4v2
+#metrics = {'episodes': [], 'scores': [], 'rewards': []}
+
+#for j in range(10):
+#    j+=1
+#    ep_reward=0
+#    for i in range(200):
+#        action, _states = model.predict(obs)
+#        obs, reward, dones, info = env.step(action)
+#        env.render()
+#        ep_reward+=reward
+
+#    print(f'Game {j}      Score: {highest_score[j]-1}')#{env.game.score}')
+#    mean_reward = ep_reward/j
+#    metrics['episodes'].append(j)
+#    metrics['rewards'].append(mean_reward)
+#    #metrics['scores'].append(env.game.score)
+#    metrics['scores']= highest_score 
+
+#plot_metrics(metrics, filepath=None)

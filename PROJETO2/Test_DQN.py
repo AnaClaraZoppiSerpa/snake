@@ -100,7 +100,7 @@ print("evaluation duration in s: ", end-start)
 #Test3
 print("Evaluating v2...")
 start=time.time()
-mean_reward = evaluate_policy(model, env, n_eval_episodes=1000)
+mean_reward = evaluate(model, env)
 end=time.time()
 print(f"mean_reward:{mean_reward:.2f}")
 print("evaluation v2 duration in s: ", end-start)
