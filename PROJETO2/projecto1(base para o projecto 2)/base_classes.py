@@ -1,17 +1,11 @@
-import os
-import sys
-from pathlib import Path
 from random import randint
 
 import pygame
 import numpy as np
 
+
 def update_screen():
     pygame.display.update()
-
-def load_image(path):
-    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-    return pygame.image.load(ROOT_DIR + path)
 
 class Game:
     """ Initialize PyGAME """
@@ -21,12 +15,11 @@ class Game:
         self.game_width = game_width
         self.game_height = game_height
         self.gameDisplay = pygame.display.set_mode((game_width, game_height + 60))
-        self.bg = load_image("/img/background.png")
+        self.bg = pygame.image.load("img/background.png")
         self.crash = False
         self.player = Player(self)
         self.food = Food()
-        self.score = 0 ########
-        
+        self.score = 0
 
 
 class Player(object):
@@ -39,7 +32,7 @@ class Player(object):
         self.position.append([self.x, self.y])
         self.food = 1
         self.eaten = False
-        self.image = load_image("/img/snakeBody.png")
+        self.image = pygame.image.load('img/snakeBody.png')
         self.x_change = 20
         self.y_change = 0
 
@@ -104,7 +97,7 @@ class Food(object):
     def __init__(self):
         self.x_food = 240
         self.y_food = 200
-        self.image = load_image("/img/food2.png")
+        self.image = pygame.image.load('img/food2.png')
 
     def food_coord(self, game, player):
         x_rand = randint(20, game.game_width - 40)

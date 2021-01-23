@@ -11,7 +11,6 @@ import copy
 DEVICE = 'cpu' # 'cuda' if torch.cuda.is_available() else 'cpu'
 
 class DQNAgent(torch.nn.Module):
-    #ccercare di integrarlo in Agent.py
     def __init__(self, params):
         super().__init__()
         self.reward = 0
@@ -49,7 +48,7 @@ class DQNAgent(torch.nn.Module):
         x = F.relu(self.f3(x))
         x = F.softmax(self.f4(x), dim=-1)
         return x
-#già c'è in environment.py    
+    
     def get_state(self, game, player, food):
         """
         Return the state.
@@ -106,7 +105,6 @@ class DQNAgent(torch.nn.Module):
 
         return np.asarray(state)
 
-#già c'è in environment.py  
     def set_reward(self, player, crash):
         """
         Return the reward.

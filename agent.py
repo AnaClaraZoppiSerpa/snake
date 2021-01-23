@@ -3,6 +3,18 @@ from random import randint
 from collections import deque
 
 import numpy as np
+import pandas as pd
+from operator import add
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+import copy
+from scipy.spatial import distance
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+import numpy as np
 
 class Agent:
     def __init__(self, N0, gamma, num_state, num_actions, action_space):
@@ -142,3 +154,112 @@ class MonteCarloAgent(QLearningAgent):
 
         self.action_history.append(self.decode_action(action))
         return action
+
+class DQNAgent(torch.nn.Module,Agent): #prbably is needed to define another kind of agent to inherit torch.nn.Module 
+
+    def __init__(self, N0, gamma, num_state, num_actions, action_space):
+        super().__init__()  
+        super(torch.nn.Module,self).__init__(N0, gamma, num_state, num_actions, action_space)
+        self.dataframe = pd.DataFrame()
+        self.short_memory = np.array([])
+        self.agent_target = 1
+        self.agent_predict = 0
+        self.learning_rate = params['learning_rate']        
+        self.epsilon = 1
+        self.actual = []
+        self.first_layer = params['first_layer_size']
+        self.second_layer = params['second_layer_size']
+        self.third_layer = params['third_layer_size']
+        self.memory = collections.deque(maxlen=params['memory_size'])
+        self.weights = params['weights_path']
+        self.load_weights = params['load_weights']
+        self.optimizer = None
+        self.network() #da inserire in codice di juninho
+
+    def choose_action(self, state):
+        # epsilon_t = N0/(N0 + N(S_t))
+        epsilon = self.epsilon_0 / (self.epsilon_0 + self.state_counter[state])
+        if np.random.uniform(0, 1) < epsilon:
+            action_index = randint(0, self.num_actions-1)
+        else:
+            # predict action based on the old state
+            with torch.no_grad():
+                state_old_tensor = torch.tensor(state_old.reshape((1, 11)), dtype=torch.float32).to(DEVICE)
+                prediction = agent(state_old_tensor)
+                #final_move = np.eye(3)[np.argmax(prediction.detach().cpu().numpy()[0])] #dovrebbe essere action
+                action_index = np.argmax(prediction.detach().cpu().numpy()[0])
+            #action_index = np.argmax(self.Q[state, :]) 
+
+        action = self.action_space[action_index] #adattare con final_move
+        self.state_counter[state] += 1
+        self.state_action_counter[state, action_index] += 1
+
+        return action
+
+    def remember(self, state, action, reward, next_state, done):
+        """
+        Store the <state, action, reward, next_state, is_done> tuple in a 
+        memory buffer for replay memory.
+        """
+        self.memory.append((state, action, reward, next_state, done))
+
+    def replay_new(self, memory, batch_size):
+        """
+        Replay memory.
+        """
+        if len(memory) > batch_size:
+            minibatch = random.sample(memory, batch_size)
+        else:
+            minibatch = memory
+        for state, action, reward, next_state, done in minibatch:
+            self.train()
+            torch.set_grad_enabled(True)
+            target = reward
+            next_state_tensor = torch.tensor(np.expand_dims(next_state, 0), dtype=torch.float32).to(DEVICE)
+            state_tensor = torch.tensor(np.expand_dims(state, 0), dtype=torch.float32, requires_grad=True).to(DEVICE)
+            if not done:
+                target = reward + self.gamma * torch.max(self.forward(next_state_tensor)[0])
+            output = self.forward(state_tensor)
+            target_f = output.clone()
+            target_f[0][np.argmax(action)] = target
+            target_f.detach()
+            self.optimizer.zero_grad()
+            loss = F.mse_loss(output, target_f)
+            loss.backward()
+            self.optimizer.step()            
+
+    def train_short_memory(self, state, action, reward, next_state, done):
+        """
+        Train the DQN agent on the <state, action, reward, next_state, is_done>
+        tuple at the current timestep.
+        """
+        self.train()
+        torch.set_grad_enabled(True)
+        target = reward
+        next_state_tensor = torch.tensor(next_state.reshape((1, 11)), dtype=torch.float32).to(DEVICE)
+        state_tensor = torch.tensor(state.reshape((1, 11)), dtype=torch.float32, requires_grad=True).to(DEVICE)
+        if not done:
+            target = reward + self.gamma * torch.max(self.forward(next_state_tensor[0]))
+        output = self.forward(state_tensor)
+        target_f = output.clone()
+        target_f[0][np.argmax(action)] = target
+        target_f.detach()
+        self.optimizer.zero_grad()
+        loss = F.mse_loss(output, target_f)
+        loss.backward()
+        self.optimizer.step()
+
+    def update(self, prev_state, next_state, reward, prev_action, next_action):
+        """
+        definition and formula: TODO
+        Args:
+            TO UPDATE if needed
+            prev_state: The previous state
+            next_state: The next state
+            reward: The reward for taking the respective action
+            prev_action: The previous action
+            next_action: The next action
+        Returns:
+            None
+        """
+       

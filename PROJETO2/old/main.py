@@ -59,7 +59,7 @@ def decode_action(encoded_action):
     return encoded_action
 
 
-def run(agent: Agent, episodes, display, speed): #it is used from any agent, so i must insert an option about the agent is DQN, at least for the Inizialize_game part (should be inserted inside the init of the agent?)
+def run(agent: Agent, episodes, display, speed):
     pygame.init()
 
     env = Environment(440, 440)
@@ -79,10 +79,9 @@ def run(agent: Agent, episodes, display, speed): #it is used from any agent, so 
         if display:
             screen.display()
 
-        # the net is not trained, then we should do something "special" (initialize_game of the base repository) before to act following DQN
         state1, done = env.reset()
         state1 = decode_state(state1)
-        action1 = agent.choose_action(state1) 
+        action1 = agent.choose_action(state1)
         episode_reward = 0
         while not done:
             # Getting the next state, reward
@@ -92,9 +91,9 @@ def run(agent: Agent, episodes, display, speed): #it is used from any agent, so 
             action2 = agent.choose_action(state2)
 
             # Learning the Q-value
-            #decoded_action1 = decode_action(action1)
-            #decoded_action2 = decode_action(action2)
-            #agent.update(state1, state2, reward, decoded_action1, decoded_action2)
+            decoded_action1 = decode_action(action1)
+            decoded_action2 = decode_action(action2)
+            agent.update(state1, state2, reward, decoded_action1, decoded_action2)
 
             state1 = state2
             action1 = action2
@@ -111,10 +110,6 @@ def run(agent: Agent, episodes, display, speed): #it is used from any agent, so 
         metrics['episodes'].append(episode)
         metrics['rewards'].append(mean_reward)
         metrics['scores'].append(env.game.score)
-
-        #probabilmente è paragonabile all'agent.update degli altri metodi, quindi bisognerebbe riadattare questa cosa
-        #model_weights = agent.state_dict()
-        #torch.save(model_weights, params["weights_path"]) #should be added beacuse it save the weights during the train
 
     return metrics
 
@@ -138,12 +133,6 @@ if __name__ == '__main__':
     num_actions = 3
     num_state = 2 ** 11
     qLearningAgent = QLearningAgent(N0, gamma, num_state, num_actions, action_space)
-
-    ''' #new
-    agent = DQNAgent(params)
-    agent = agent.to(DEVICE)
-    agent.optimizer = optim.Adam(agent.parameters(), weight_decay=0, lr=params['learning_rate'])
-    '''
 
     metrics = run(qLearningAgent, episodes=args.episodes, speed=args.speed, display=args.display)
     plot_metrics(metrics, filepath=args.figure)
