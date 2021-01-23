@@ -26,6 +26,7 @@ def default_reward(env):
 class SnakeEnv(gym.Env):
 
     def __init__(self, game_width, game_height, reward_function=default_reward, enable_render=True):
+        super(SnakeEnv, self).__init__()
         self.game_width = game_width
         self.game_height = game_height
         self.game = Game(game_width, game_height)
@@ -40,9 +41,8 @@ class SnakeEnv(gym.Env):
         self.observation_space = spaces.Discrete(num_state)
         self.count = 0
 
-        #self.observation_space = spaces.Box(low=0, high=1, shape=(11,)) #this is a try, i don't know if the agruments are correct
-        #self.action_space = spaces.Discrete(3) #number of action available - left,right, contiue forward
-        ##self.action_space = spaces.Box(np.array([0,0,0]), np.array([+1,+1,+1])) #should be better?
+        #self.observation_space = spaces.Box(low=0, high=1, shape=(11,)) #an alternative
+        ##self.action_space = spaces.Box(np.array([0,0,0]), np.array([+1,+1,+1])) #should be better? if we return a state as array, i think so
 
 
         # Simulation related variables.
@@ -72,6 +72,7 @@ class SnakeEnv(gym.Env):
         # else:
         #     print("State", state, "Reward", reward, "Action", action)
 
+        #why this?
         self.count += 1
         if self.count == 1000:
             done = True

@@ -1,5 +1,4 @@
 import pygame
-import time
 
 
 class Screen(object):
@@ -11,12 +10,12 @@ class Screen(object):
         #else:
         #    print("(+) PyGame successfully initialized!")
 
-        pygame.font.init()
-
         self.game = game
         self.player = player
         self.food = food
         self.record = 0
+
+        self.thickness = 10
 
     def __display_ui(self):
         score = self.game.score
